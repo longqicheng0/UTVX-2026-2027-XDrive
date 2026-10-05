@@ -1,0 +1,59 @@
+{
+  "checked_on": "2026-09-28",
+  "host": "codex-cli 0.155.0-alpha.16.3",
+  "method": "skills/list",
+  "forceReload": true,
+  "scope": "Fresh local app-server process using the installed Codex binary; no model turn or current-chat UI refresh tested.",
+  "result": [
+    {
+      "cwd": "/Users/elong/Desktop/UTVX-2026-2027-X-Drive",
+      "skills": [
+        {
+          "name": "grill-me",
+          "description": "A relentless interview to sharpen a plan or design.",
+          "interface": {
+            "displayName": "Grill Me",
+            "shortDescription": "Sharpen a plan through interview",
+            "iconSmall": null,
+            "iconLarge": null,
+            "iconSmallUrl": null,
+            "iconLargeUrl": null,
+            "brandColor": null,
+            "defaultPrompt": null
+          },
+          "path": "/Users/elong/Desktop/UTVX-2026-2027-X-Drive/.agents/skills/grill-me/SKILL.md",
+          "scope": "repo",
+          "enabled": true,
+          "pluginId": null
+        },
+        {
+          "name": "grilling",
+          "description": "Grill the user relentlessly about a plan, decision, or idea. Use when the user wants to stress-test their thinking, or uses any 'grill' trigger phrases.",
+          "interface": {
+            "displayName": "Grilling",
+            "shortDescription": "Stress-test thinking a round of questions at a time",
+            "iconSmall": null,
+            "iconLarge": null,
+            "iconSmallUrl": null,
+            "iconLargeUrl": null,
+            "brandColor": null,
+            "defaultPrompt": null
+          },
+          "path": "/Users/elong/Desktop/UTVX-2026-2027-X-Drive/.agents/skills/grilling/SKILL.md",
+          "scope": "repo",
+          "enabled": true,
+          "pluginId": null
+        },
+        {
+          "name": "xdrive-hve-tutor",
+          "description": "Guide this workspace's beginner X-drive engineering lessons through a lightweight HVE-derived Research, Plan, Implement, Review, and Follow-up cycle while the learner writes the application code. Use for drivetrain lessons and saved-code checks.",
+          "path": "/Users/elong/Desktop/UTVX-2026-2027-X-Drive/.agents/skills/xdrive-hve-tutor/SKILL.md",
+          "scope": "repo",
+          "enabled": true,
+          "pluginId": null
+        }
+      ],
+      "errors": []
+    }
+  ]
+}

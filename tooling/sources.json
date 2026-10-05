@@ -1,0 +1,26 @@
+{
+  "installed_on": "2026-09-28",
+  "mattpocock_skills": {
+    "repository": "https://github.com/mattpocock/skills",
+    "commit": "c55ee46073ed923f86ce59a5eb3b6d895095d1b7",
+    "paths": [
+      "skills/productivity/grill-me",
+      "skills/productivity/grilling"
+    ]
+  },
+  "hve_core": {
+    "repository": "https://github.com/microsoft/hve-core",
+    "commit": "a146d8d01ad1e38f82d5d8eebb7fa8d1d88c4092",
+    "package_version": "3.2.2",
+    "channel": "pinned development tip",
+    "mode": "local Codex tutor adaptation",
+    "adapted_from": "docs/rpi/README.md"
+  },
+  "sha256": {
+    ".agents/skills/grill-me/SKILL.md": "caaf8b8de1684f96e26b28f3c29189db5c89cce4b73e1c93d86164f66ef88637",
+    ".agents/skills/grilling/SKILL.md": "10ff989e7498b23b5acb49d5048f11dcd906757d2f79c5cdf8a00001381296f2",
+    "tooling/upstream/hve-core/RPI.md": "82df4b25c89f07e7c171792d0353f24ef0534f55826c299f9ebb9c87ec7ab9d1",
+    "tooling/upstream/hve-core/LICENSE": "c7eb8fb4cf893534af823d4aa0fe6fa83a961320375772915fd9b6a21d890d87",
+    "tooling/upstream/mattpocock-skills/LICENSE": "0e7ac423bf2c6e223b7c5b156f8cf72da49d748e56a1641402c31f22ad07dbb5"
+  }
+}
