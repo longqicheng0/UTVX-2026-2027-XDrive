@@ -6,7 +6,7 @@ The learner is a complete beginner and writes the application code. Do not creat
 
 Reference repository: `/Users/elong/Desktop/5225A-2024-2025-X-Drive`. Read-only: never modify, build inside, or copy implementation from it. Its code is evidence of one design, not proof of correctness. Independently verify hardware configuration, geometry, sensor signs, calibration, and gains.
 
-Scope: four drive corners with two motors per corner, two tracking-wheel rotation sensors, and IMU. Use PROS for hardware/scheduling and derive our own drivetrain mathematics/control. Exclude intake, lift, pneumatics, competition routines, dashboards, and elaborate logging. Postpone generic state machines, asynchronous motion, path following, nested velocity controllers, and feedforward.
+Scope: this year's drivetrain has four physical omni drive wheels (FL, FR, BL, BR), with two motors driving each wheel (eight drive motors total), as confirmed by the learner on October 7, 2026. Derive four wheel commands and map each to its two assigned motors at the hardware boundary. Distinguish physical wheel count from motor count throughout the lessons. The planned sensing architecture uses two separate tracking-wheel rotation sensors and an IMU; their actual mounting/configuration still needs verification. Use PROS for hardware/scheduling and derive our own drivetrain mathematics/control. Exclude intake, lift, pneumatics, competition routines, dashboards, and elaborate logging. Postpone generic state machines, asynchronous motion, path following, nested velocity controllers, and feedforward.
 
 ## Teaching contract
 
@@ -26,8 +26,8 @@ Scope: four drive corners with two motors per corner, two tracking-wheel rotatio
 
 1. Physical layout and coordinate conventions.
 2. Smallest appropriate C++ project and compilation.
-3. Motor command representation and individual motor directions.
-4. Derive and implement four-corner mixing.
+3. Four wheel commands, their mapping to eight motors (two per wheel), and individual motor directions.
+4. Derive and implement mixing for the four physical omni drive wheels.
 5. Joystick input, dead zones, normalization, command limits, stopping.
 6. Pose, angles, sensor units, elapsed time.
 7. Sensor readings and incremental odometry.

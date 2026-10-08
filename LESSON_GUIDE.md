@@ -4,6 +4,8 @@ Build the drivetrain yourself, one small step at a time. This guide explains the
 
 **Prepared:** October 5, 2026. **Status:** learning plan only. Creating this guide has not created application source, a desktop harness, a PROS project, or hardware results.
 
+**Drivetrain specification updated:** October 7, 2026, from the learner's clarification: four physical omni drive wheels, with two motors driving each wheel (eight drive motors total).
+
 ## How to use this guide
 
 Read the architecture overview once, then work through one numbered lesson at a time. Each lesson gives one exercise. Attempt it before opening its hints. A milestone finishes when its completion criteria have evidence; reading the section does not complete it.
@@ -14,17 +16,17 @@ The teaching workflow is Research → Plan → Implement → Review → Follow-u
 
 The [teaching contract](AGENTS.md) and the [X-drive tutor instructions](../.agents/skills/xdrive-hve-tutor/SKILL.md) inform this guide. The `AGENTS.md` reference path and its relative skill links are older than the current layout. The paths below and the parent workspace's `.agents/skills/` are the locations used here; generating this document did not repair those other files.
 
-## Project roots and current evidence
+## Project roots and evidence
 
-| Item | Current evidence |
+| Item | Recorded evidence |
 | --- | --- |
 | Learning root | `/Users/elong/Desktop/UTVX-2026-2027-X-Drive/UTVX-2026-2027-XDrive-Basic` |
 | Read-only reference | `/Users/elong/Desktop/UTVX-2026-2027-X-Drive/5225A-2024-2025-X-Drive` |
 | Existing learning files | `README.md`, `AGENTS.md`, `LICENSE`, `.gitignore`, and setup records in `tooling/`; no drivetrain source was present when this guide was prepared. |
 | Available desktop tools | `/usr/bin/clang++`: Apple Clang 21.0.0, ARM64 macOS; `/usr/bin/g++` is also on PATH. GNU Make 3.81 is available. |
 | Tools not found on PATH | `pros` and `cmake`. This does not establish whether they are installed somewhere else. |
-| Actual robot | Availability, motor ports, wheel geometry, wiring, and sensor mounting are unknown. |
-| Learning progress | No coordinate convention has been accepted, no learner application has been compiled, and no desktop mathematics or robot motion has been verified. |
+| Current drivetrain | Learner-confirmed: four omni drive wheels, one at each corner, and two motors per wheel (eight drive motors total). Lessons currently use the computer-only path. Motor ports, reversal settings, wheel dimensions/angles, wiring, and sensor mounting still need verification. |
+| Learning progress at preparation | On October 5, no coordinate convention had been accepted, no learner application had been compiled, and no desktop mathematics or robot motion had been verified. This is the preparation snapshot, not a live checkpoint. |
 
 The [reference project metadata](../5225A-2024-2025-X-Drive/main/project.pros) records VEX V5, PROS kernel 3.8.3, OkapiLib 4.8.0, and a radio template. Its [build configuration](../5225A-2024-2025-X-Drive/main/common.mk) uses GNU C++20 and an ARM cross-compiler. These describe the old project, not selected dependencies for yours. Okapi is installed there, but its include is commented out in [main.h](../5225A-2024-2025-X-Drive/main/include/main.h); the relevant drive, tracking, and control code is custom.
 
@@ -32,9 +34,33 @@ The [reference project metadata](../5225A-2024-2025-X-Drive/main/project.pros) r
 
 A module is a small group of files with a defined job. Separating jobs makes a wrong result easier to locate. A mathematical function should accept ordinary values and return ordinary values; reading a physical device or writing to a motor belongs at the hardware boundary.
 
+### This year's physical layout: four wheels, eight motors
+
+Wheel count and motor count describe different things. This year's drivetrain has one omni drive wheel at each of FL, FR, BL, and BR. Two motors drive each of those wheels, so the software calculates four wheel demands and later routes each demand to its two assigned motors.
+
+| Quantity | Count | Meaning in the lessons |
+| --- | --- | --- |
+| Physical omni drive wheels | 4 | One wheel at each corner: FL, FR, BL, BR. |
+| Drive motors | 8 | Two motors assigned to each physical drive wheel. |
+| Driven rolling axes | 4 | One driven axis per wheel; motor mounting does not add another wheel axis. |
+| Mixer outputs | 4 | `WheelCommands` contains `fl`, `fr`, `bl`, and `br`. |
+
+```text
+DriveCommand → mixDrive → four WheelCommands → applyWheelCommands
+
+                         fl → FL motor A + FL motor B → one FL omni wheel
+                         fr → FR motor A + FR motor B → one FR omni wheel
+                         bl → BL motor A + BL motor B → one BL omni wheel
+                         br → BR motor A + BR motor B → one BR omni wheel
+```
+
+`A` and `B` are labels for the two motors assigned to a wheel, not assumptions about top/bottom mounting or ports. Four wheel locations and rolling axes determine the mixer geometry. Eight motor objects belong in the later hardware configuration/output layer. Motor mounting, gearing, and reversal must be checked for this robot before applying commands.
+
+The planned tracking wheels used for odometry are separate sensor wheels; they are not included in the four drive-wheel count. The reference remains useful for module responsibilities and motor-pair routing, while its constants and physical geometry remain reference facts. Continue with the four-output interface already introduced; derive the wheel equations from this year's four-wheel drawing in milestone 4.
+
 | Reference module | What the source does | Beginner version |
 | --- | --- | --- |
-| [config.hpp / config.cpp](../5225A-2024-2025-X-Drive/main/src/config.cpp) | Declares and defines the controller, motor, and sensor objects. Eight drive motors form two-motor pairs at FL, FR, BL, and BR. | One hardware definition per device; an independently checked configuration. |
+| [config.hpp / config.cpp](../5225A-2024-2025-X-Drive/main/src/config.cpp) | Declares and defines the controller, motor, and sensor objects. Eight drive motor objects form two-motor pairs at FL, FR, BL, and BR. | Eight motor definitions mapped to this year's four physical omni drive wheels; independently checked ports and directions. |
 | [drive.hpp / drive.cpp](../5225A-2024-2025-X-Drive/main/src/drive.cpp) | `moveDrive()` mixes strafe, forward, and turn demands; `moveWheels()` writes corner demands. Driver input passes through `driveHandleInput()`. | Pure mixing and limits plus a small hardware output layer. |
 | [Libraries/controller.cpp](../5225A-2024-2025-X-Drive/main/src/Libraries/controller.cpp) | Maps left X to strafe, left Y to forward, and right X to turning; adds custom controller services. | Use ordinary PROS controller reads initially. A custom wrapper is unnecessary for the first manual-control lesson. |
 | [Libraries/util.hpp / util.cpp](../5225A-2024-2025-X-Drive/main/src/Libraries/util.cpp) | Converts angle units and represents/rotates position and vector data. | Plain `Pose` and `Vec2` structs, named conversion and rotation functions. |
@@ -79,7 +105,7 @@ A `.hpp` file declares what other files may use. A `.cpp` file defines how a fun
 Manual control:
 controller → raw input check → normalized DriveCommand
            → dead zone → mixDrive → normalizeWheelCommands
-           → applyWheelCommands → physical motors
+           → applyWheelCommands → eight motors → four omni drive wheels
 
 Tracking:
 physical sensors → captureSensors → validated SensorSample
@@ -91,7 +117,7 @@ target + current Pose → computePoseCommand + controller state
                       → new physical motion → new sensor sample
 ```
 
-`DriveCommand` holds `cmdStrafe`, `cmdForward`, and `cmdTurn`, all dimensionless demands. `WheelCommands` holds four corner demands `fl`, `fr`, `bl`, `br`. `Pose` holds position in metres and heading in radians. `SensorSample` contains a timestamp and converted, signed tracking distances/heading plus validity. These are planned names; agree on their exact fields during the relevant lesson rather than creating all of them now.
+`DriveCommand` holds `cmdStrafe`, `cmdForward`, and `cmdTurn`, all dimensionless demands. `WheelCommands` holds one demand for each of the four physical omni drive wheels: `fl`, `fr`, `bl`, `br`. Each demand later reaches the two motors assigned to that wheel. `Pose` holds position in metres and heading in radians. `SensorSample` contains a timestamp and converted, signed tracking distances/heading plus validity. These are planned names; agree on their exact fields during the relevant lesson rather than creating all of them now.
 
 One loop owns motor writes at a time. Start with one tracking update per active loop iteration. Do not also start the reference's background tracker and state-machine stack: duplicate owners make samples and motor commands difficult to reason about.
 
@@ -168,9 +194,9 @@ These compact facts were checked against the reference's local headers and offic
 
 | Milestone | Lessons | Evidence before advancing |
 | --- | --- | --- |
-| [1. Physical layout](#milestone-1) | 1.1–1.3 | A labelled layout, proposed axes, and explained rolling directions. |
+| [1. Physical layout](#milestone-1) | 1.1–1.3 | Four physical drive wheels labelled separately from their eight motors, proposed axes, and explained rolling directions. |
 | [2. C++ foundations](#milestone-2) | 2.1–2.3 | A learner-written desktop program builds and its data/function flow is understood. |
-| [3. Commands and motors](#milestone-3) | 3.1–3.3 | Corner ordering and command units are explicit; hardware direction remains pending if unavailable. |
+| [3. Commands and motors](#milestone-3) | 3.1–3.3 | Four wheel demands map to four two-motor groups; command units are explicit, and hardware direction remains pending if unavailable. |
 | [4. Wheel mixing](#milestone-4) | 4.1–4.3 | Learner-derived signs pass translation, turn, zero, and superposition checks. |
 | [5. Manual control](#milestone-5) | 5.1–5.3 | Dead zones, common scaling, output boundaries, and stop behaviour are checked. |
 | [6. Pose and units](#milestone-6) | 6.1–6.4 | Angle, time, and coordinate helpers pass boundary and round-trip checks. |
@@ -185,23 +211,25 @@ Intake, lift, pneumatics, dashboards, competition strategy, generic state machin
 
 ## Milestone 1 — Understand the physical X-drive
 
-Intended behavior: explain how four angled omni-wheel corners can translate and turn. Evidence: a labeled drawing and a defensible sign convention. No software or hardware behavior is verified by this milestone.
+Intended behavior: explain how four angled omni drive wheels can translate and turn, with two motors driving each wheel. Evidence: a labeled drawing and a defensible sign convention. No software or hardware behavior is verified by this milestone.
 
 ### Lesson 1.1 — Separate driven rolling from passive rolling
 
 **Objective and prerequisites:** Recognize the two distinct directions of motion at an omni wheel. No programming prerequisites. **Why physically:** A drivetrain equation only makes sense when it describes the direction the motor actually drives.
 
-A conventional wheel resists sideways motion. An omni wheel adds small rollers around its rim. The motor drives motion along the main wheel's rolling direction; the rollers allow motion across that direction with much less resistance. Neither direction should be identified from the motor housing alone. Look at the main wheel plane and roller axes. An X-drive uses four corners whose driven rolling axes are diagonal relative to the chassis; paired motors at a corner still command one rolling direction.
+A conventional wheel resists sideways motion. An omni wheel adds small rollers around its rim. The motors drive motion along the main wheel's rolling direction; the rollers allow motion across that direction with much less resistance. Neither direction should be identified from the motor housing alone. Look at the main wheel plane and roller axes. This year's X-drive uses four physical omni drive wheels whose driven rolling axes are diagonal relative to the chassis. Each wheel's two motors drive that same wheel along one rolling axis.
 
 ```text
                    FRONT
-          FL                  FR
+       FL wheel            FR wheel
+       2 motors            2 motors
                   robot
-          BL                  BR
+       BL wheel            BR wheel
+       2 motors            2 motors
                     BACK
 ```
 
-FL means front-left, FR front-right, BL back-left, and BR back-right, viewed from above facing the robot's front. The diagram locates corners; it does not assert their wheel mounting angles. A rolling **axis** is an unoriented line; a positive rolling **direction** adds an arrow to that line. Keep that distinction until motor directions are checked. The [reference config](../5225A-2024-2025-X-Drive/main/src/config.cpp) defines two motors for each corner, but does not prove the mounting geometry.
+FL means front-left, FR front-right, BL back-left, and BR back-right, viewed from above facing the robot's front. Each corner in this diagram contains one omni drive wheel and two motors; the diagram does not assert their mounting angles. A rolling **axis** is an unoriented line; a positive rolling **direction** adds an arrow to that line. Keep that distinction until motor directions are checked. The [reference config](../5225A-2024-2025-X-Drive/main/src/config.cpp) defines two motor objects for each corner, but does not prove this year's mounting geometry.
 
 **File/function:** No file/function yet. **One exercise:** Draw one omni wheel with its driven axis and passive roller direction labeled.
 
@@ -252,7 +280,7 @@ Draw each corner's actual driven rolling axis. For an ideal symmetric X-drive, t
 
 For pure translation, all chassis points share the same displacement. Each wheel responds to the component of that displacement along its driven axis; rollers accommodate the other component. For pure rotation, each corner instead moves tangent to a circle about the chassis center. Thus a corner's rotational requirement depends on both its location and rolling axis. Translation and rotation can coexist because their velocity contributions add.
 
-The [reference `moveWheels(fl, fr, bl, br)`](../5225A-2024-2025-X-Drive/main/src/drive.cpp) separates four corner outputs from the eight motor objects. That is a useful architectural boundary: reason with four wheel commands, then send each command to its two motors. It does not validate the physical wheel arrangement.
+The [reference `moveWheels(fl, fr, bl, br)`](../5225A-2024-2025-X-Drive/main/src/drive.cpp) separates four corner outputs from the eight motor objects. Use that architectural boundary for this year's four-wheel drivetrain: reason with one command per physical wheel, then send each command to that wheel's two motors. Source routing does not validate the physical wheel arrangement.
 
 **Symbols:** A corner label identifies location, not output sign; displacement has length units, whereas rolling-axis direction is dimensionless.
 
@@ -371,13 +399,13 @@ The [reference `config.hpp`](../5225A-2024-2025-X-Drive/main/src/config.hpp) dec
 
 ## Milestone 3 — Represent commands and establish motor directions
 
-Intended behavior: maintain one four-corner output ordering and explain how each output reaches two motors. Evidence: desktop structure checks or observed individual motor direction checks, explicitly labeled by path.
+Intended behavior: maintain four outputs, one per physical omni drive wheel, and explain how each output reaches that wheel's two motors (eight motor destinations total). Evidence: desktop structure checks or observed individual motor direction checks, explicitly labeled by path.
 
 ### Lesson 3.1 — Represent four corner outputs without hardware
 
 **Objective and prerequisites:** Establish wheel ordering and mathematical interfaces; prerequisites: 2.3 and the corner drawing. **Why physically:** A correct number sent to the wrong corner produces incorrect motion.
 
-Use the same ordering everywhere: FL, FR, BL, BR. A proposed `WheelCommands` struct will name these four dimensionless outputs. Before normalization they may exceed magnitude one because several requested motions can combine. After normalization, each output must fit the selected mathematical bound; hardware scaling comes later.
+Use the same ordering everywhere: FL, FR, BL, BR. A proposed `WheelCommands` struct will name these four dimensionless outputs, one per physical omni drive wheel. Two motors per wheel do not require two mixer outputs for that wheel. Before normalization the four outputs may exceed magnitude one because several requested motions can combine. After normalization, each output must fit the selected mathematical bound; hardware scaling comes later.
 
 Plan a pure function `mixDrive(command)` that accepts a `DriveCommand` and returns `WheelCommands`. “Pure” here means it calculates values without reading sensors or touching motors. That makes the same mathematics usable on a computer and a robot. Keep pure mathematics in `drive.cpp` and its PROS-free `drive.hpp`. Plan a separate `applyWheelCommands(wheels)` function in `drive_io.cpp` for motor output. The higher-level `moveDrive` adapter will mix, normalize, then apply. Keeping these functions separate lets you inspect calculations without energizing anything. The [reference `moveDrive` and `moveWheels`](../5225A-2024-2025-X-Drive/main/src/drive.cpp) suggest the same responsibility split, although its mixer directly writes motors.
 
@@ -396,9 +424,11 @@ A function interface is a promise about inputs and outputs. It should state corn
 
 **Common mistake:** Swapping BL and BR during output conversion. **Complete when:** The interface states names, order, and dimensionless units.
 
-### Lesson 3.2 — Define hardware once and record pair mappings
+### Lesson 3.2 — Map each of four wheels to its two motors
 
-**Objective and prerequisites:** Understand shared motor objects and paired output; prerequisite: 3.1. **Why physically:** Two motors attached to one corner must cooperate in the same wheel direction even if their shafts face opposite ways.
+**Objective and prerequisites:** Understand shared motor objects and the four-wheel-to-eight-motor mapping; prerequisite: 3.1. **Why physically:** Both motors assigned to one physical omni wheel must cooperate in the same wheel direction even if their shafts face opposite ways.
+
+Start from this year's four wheel labels. Each label has one `WheelCommands` value and two motor destinations. Call those motors A and B until their actual mounting and ports are recorded. Keep one wheel record per corner with two motor entries, so the hardware layer describes four wheels and eight motors clearly.
 
 The reference defines these pairs in [config.cpp](../5225A-2024-2025-X-Drive/main/src/config.cpp): FL top/bottom ports 10/9, FR 4/5, BL 19/18, and BR 14/15. It assigns opposite reversal flags within each pair and uses the `E_MOTOR_GEARSET_18` cartridge setting. These are facts about that code; the learning robot's ports, transmissions, cartridges, and mounting remain unverified. A reversal flag converts motor-native direction to the intended mechanism direction. It does not fix an incorrect corner assignment or wheel-axis equation.
 
@@ -406,9 +436,9 @@ The future robot `config.hpp` will contain an `extern pros::Motor` declaration f
 
 **Symbols/units:** Port numbers are identifiers; reversal is Boolean; wheel commands are dimensionless. **File/function proposed:** `main/src/config.hpp` and `config.cpp`, hardware object declarations/definitions; no function yet.
 
-**One exercise:** Make one proposed FL pair mapping record with fields for both ports, mounting direction, reversal, and evidence status.
+**One exercise:** Make one proposed FL wheel mapping record with two motor entries (A and B), each with fields for port, mounting direction, reversal, and evidence status. Label it as one physical omni wheel driven by two motors.
 
-**Check:** Unknown values stay explicitly unknown.
+**Check:** The record describes one wheel, two motor destinations, and one wheel command. Unknown hardware values stay explicitly unknown; on the computer-only path, do not create PROS motor objects yet.
 
 <details>
 <summary>Hints — open after your attempt</summary>
@@ -421,7 +451,7 @@ The future robot `config.hpp` will contain an `extern pros::Motor` declaration f
 
 ### Lesson 3.3 — Check one motor sign before checking the mixer
 
-**Objective and prerequisites:** Design an individual direction check; prerequisites: 3.2 and agreed positive rolling arrows. **Why physically:** A reversed motor can imitate a bad drivetrain equation, and paired motors can oppose each other.
+**Objective and prerequisites:** Design an individual direction check; prerequisites: 3.2 and agreed positive rolling arrows. **Why physically:** A reversed motor can imitate a bad drivetrain equation, and the two motors driving one wheel can oppose each other.
 
 Hardware direction verification proceeds at the smallest boundary: one motor, one short low output, one observed wheel direction, then zero output. Establish a clear, supported setup with wheels free to rotate and an immediate stop available. Check each member of a pair separately before commanding the pair together. The required observation is whether positive motor output produces the chosen positive wheel rolling direction. Matching raw shaft directions is insufficient because mounting or gearing may invert one shaft's effect.
 
@@ -433,7 +463,7 @@ The [reference `moveWheels`](../5225A-2024-2025-X-Drive/main/src/drive.cpp) send
 
 **File/function proposed:** Later robot `main/src/drive_io.cpp`, temporary `checkOneMotorDirection()` for an individual motor; normal paired output stays in `applyWheelCommands()`. Desktop `desktop/lesson_main.cpp`, `main()` prints routing values without hardware. The individual check needs its own explicit stop path and must not accidentally command the paired motor.
 
-**One exercise:** Write the predicted observation for one positive FL-top motor check.
+**One exercise:** Write the predicted observation for a positive check of FL motor A, one of the two motors driving the single FL omni wheel.
 
 **Check:** The prediction names wheel direction and stop condition.
 
@@ -591,7 +621,7 @@ Send the current request every cycle initially so a transition to zero is easy t
 
 **One exercise:** Implement one manual-control input-to-output iteration on your chosen path, using the existing helpers. On the desktop, `main()` supplies a chosen input and prints wheels; on hardware, `opcontrol()` calls the hardware read and write boundaries.
 
-**Check:** Identify the cycle in which all four zero commands reach both motors per corner.
+**Check:** Identify the cycle in which the four zero wheel commands reach all eight motors, two assigned to each physical omni drive wheel. On the desktop, trace the four values and their planned destinations; actual motor stopping remains a hardware observation.
 
 <details>
 <summary>Hints — open after your attempt</summary>
