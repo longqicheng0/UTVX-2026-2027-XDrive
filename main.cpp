@@ -3,13 +3,14 @@
 
 
 int main(){
-    double cmdForward = 0.5;
-
-    std::cout << cmdForward; //Print sth: std::cout << <variable>
-
     DriveCommand command{};
-    command.cmdForward = 0.5;
+    command.cmdForward = 0;
+    command.cmdStrafe = 0;
+    command.cmdTurn = 0.5;
 
-    std::cout << command.cmdForward; 
+    WheelCommands wheels = mixDrive(command);
+
+    //std::cout << command.cmdForward; 
+    std::cout << wheels.fl << " " << wheels.fr << " " << wheels.bl << " " << wheels.br;
 
 };
