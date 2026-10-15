@@ -14,4 +14,6 @@ struct WheelCommands{
     double br;
 };
 
+WheelCommands normWheelCommands(WheelCommands wheels);
+
 WheelCommands mixDrive(DriveCommand command);
