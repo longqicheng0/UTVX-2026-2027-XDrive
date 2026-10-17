@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <cmath>
 #include "main/src/drive.hpp"
+#include "main/src/Libraries/util.hpp"
 
 
 int main(){
@@ -22,6 +23,46 @@ int main(){
 
     //std::cout << command.cmdForward; 
     std::cout << wheels.fl << " " << wheels.fr << " " << wheels.bl << " " << wheels.br;
+
+    Pose pose{};
+
+    pose.theta = 0;
+
+    double dt = 0.1;              // seconds
+    double maxLinearSpeed = 1.0;  // metres per second
+    double maxTurnSpeed = 1.0;    // radians per second
+    double angularVelocity = command.cmdTurn * maxTurnSpeed;
+
+    for (int step = 0; step < 10; step++){
+        Vec2 bodyVelocity{};
+
+        bodyVelocity.x = command.cmdStrafe * maxLinearSpeed;
+        bodyVelocity.y = command.cmdForward * maxLinearSpeed;
+
+        // fieldVelocity = bodyToField(bodyVelocity, pose.theta);
+
+        // pose.x += fieldVelocity.x * dt;
+        // pose.y += fieldVelocity.y * dt;
+        // pose.theta += command.cmdTurn * maxTurnSpeed * dt;
+        pose = integratePose(pose, bodyVelocity, angularVelocity, dt);
+
+        std::cout << "\nPose: " << pose.x << " " << pose.y << " " << pose.theta << '\n';
+        
+        
+
+
+
+    }
+
+    
+
+        
+        
+
+
+
+
+
 
 
 };
