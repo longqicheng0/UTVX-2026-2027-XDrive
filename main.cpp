@@ -46,6 +46,8 @@ int main(){
         // pose.theta += command.cmdTurn * maxTurnSpeed * dt;
         pose = integratePose(pose, bodyVelocity, angularVelocity, dt);
 
+        pose.theta = wrapAngles(pose.theta);
+
         std::cout << "\nPose: " << pose.x << " " << pose.y << " " << pose.theta << '\n';
         
         

@@ -25,8 +25,12 @@ double wrapAngles(double angle){
     while (angle > std::numbers::pi){
         angle -= 2 * std::numbers::pi;
     }
-    while (angle < std::numbers::pi){
+    while (angle < -std::numbers::pi){
         angle += 2 * std::numbers::pi;
     }
     return angle;
+}
+
+double elapsedSeconds(std::uint32_t startTime, std::uint32_t endTime){
+    return (endTime - startTime)/1000.0;
 }
